@@ -1,0 +1,34 @@
+#!/usr/local/bin/python3
+
+import openai
+import sys
+
+openai.api_key = 'your-key-here'
+
+def prompt(text):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=text,
+        max_tokens=250,
+        temperature=0.1,
+    )
+    
+    return response.choices[0].text.strip()
+
+if __name__ == "__main__":
+    # Do we have stdin
+    if not sys.stdin.isatty():
+        if len(sys.argv) == 1:
+            print("no modifier given")
+            exit(-1)
+
+        modifier = ' '.join(sys.argv[1:])
+        stdin = sys.stdin.read()
+        print(prompt(f"apply [{modifier}] to [{stdin}]"))
+    else:
+        if len(sys.argv) == 1:
+            print("no prompt given")
+            exit(-1)
+
+        text = ' '.join(sys.argv[1:])
+        print(prompt(f"{text}"))

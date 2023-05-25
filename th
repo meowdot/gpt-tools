@@ -1,0 +1,36 @@
+#!/usr/local/bin/python3
+
+import openai
+import os
+import subprocess
+import sys
+
+openai.api_key = 'your key here'
+
+def prompt(text):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=text,
+        max_tokens=250,
+        temperature=0.1
+    )   
+    
+    return response.choices[0].text.strip()
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        print("No command text given")
+        exit()
+
+    user_input = ' '.join(sys.argv[1:])
+    command = prompt(f"Turn the following text into a MacOS command or series of commands: {user_input}.  Print only the command itself and nothing else.")
+    
+    print(f"command: {command}")
+    
+    proceed = input("run? (yes/no): ")
+    if proceed.lower() == "yes" or proceed.lower() == "y" or len(proceed) == 0:
+        shell_pid = os.getpid()
+        subprocess.Popen(command, shell=True, executable='/bin/bash', env={'PARENT_PID': str(shell_pid)})
+    else:
+        print("cancelled")
+
