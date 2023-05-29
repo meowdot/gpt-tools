@@ -7,15 +7,15 @@ import sys
 
 openai.api_key = 'your key here'
 
-def prompt(text):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=text,
+def prompt(chat):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
         max_tokens=250,
-        temperature=0.1
-    )   
-    
-    return response.choices[0].text.strip()
+        temperature=0.1,
+        messages=chat
+    )
+
+    return response['choices'][0]['message']['content'].strip("[]` ")
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
@@ -23,7 +23,16 @@ if __name__ == "__main__":
         exit()
 
     user_input = ' '.join(sys.argv[1:])
-    command = prompt(f"Turn the following text into a MacOS command or series of commands: {user_input}.  Print only the command itself and nothing else.")
+    command = prompt(
+            [
+                {"role": "system", "content": "You are an assistant that is an expert using the terminal"},
+                {"role": "user", "content": "I will give you a text description of a command I want to run"},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": "Do NOT respond with any English text, only terminal commands."},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": f"How do you ${user_input}?"}
+            ]
+    )
     
     print(f"command: {command}")
     
