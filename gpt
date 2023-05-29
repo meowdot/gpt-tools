@@ -5,15 +5,15 @@ import sys
 
 openai.api_key = 'your-key-here'
 
-def prompt(text):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=text,
+def prompt(chat):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
         max_tokens=250,
         temperature=0.1,
+        messages=chat
     )
-    
-    return response.choices[0].text.strip()
+
+    return response['choices'][0]['message']['content'].strip("[]` ")
 
 if __name__ == "__main__":
     # Do we have stdin
@@ -24,11 +24,33 @@ if __name__ == "__main__":
 
         modifier = ' '.join(sys.argv[1:])
         stdin = sys.stdin.read()
-        print(prompt(f"apply [{modifier}] to [{stdin}]"))
+        response = prompt(
+            [
+                {"role": "system", "content": "You are an assistant that is an expert at modifying text"},
+                {"role": "user", "content": "I'm going to give you text to work on and instructions how to modify it"},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": "Only respond with the modified text and NOT anything else."},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": f"Here is the text: '{stdin}'"},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": f"Here is how to modify the text: {modifier}"}
+            ]
+        )
+        print(response)
     else:
         if len(sys.argv) == 1:
             print("no prompt given")
             exit(-1)
 
         text = ' '.join(sys.argv[1:])
-        print(prompt(f"{text}"))
+        response = prompt(
+            [
+                {"role": "system", "content": "You are an assistant that is an expert at generating text"},
+                {"role": "user", "content": "I'm going to give you instructions on what text to generate."},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": "Only interpret my instructions as a means to generate text."},
+                {"role": "assistant", "content": "ok"},
+                {"role": "user", "content": f"instructions: {text}"}
+            ]
+        )
+        print(response)
